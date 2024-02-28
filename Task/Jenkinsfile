@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+    parameters {
+        choice(name: 'BRANCH', choices: ['branch-1', 'branch-2', 'branch-3' 'branch-4', 'branch-5'], description: 'Select the branch to build')
+        string(name: 'BUILD_USER', defaultValue: 'user', description: 'Enter your name')
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    def selectedBranch = params.BRANCH ?: 'master'
+                    git branch: selectedBranch, url: 'https://github.com/sakshammandliya/GithubDemo.git'
+                    sh "cat ${selectedBranch}/Hello.txt"
+                
+                }
+            }
+
+        }
+        stage('Build') {
+            steps {
+                script {
+                    sh "git checkout ${params.BRANCH}"
+                    sh 'mvn clean install'
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo "Build successful by ${params.BUILD_USER} on ${params.BRANCH} branch!"
+        }
+        failure {
+            echo "Build failed by ${params.BUILD_USER} on ${params.BRANCH} branch!"
+        }
+    }
+}
